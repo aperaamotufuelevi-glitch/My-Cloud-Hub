@@ -1,0 +1,1372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Cloud Hub</title>
+<style>
+:root{--bg:#0d1526;--panel:#121d33;--panel2:#18264a;--line:#26375e;--text:#e7edf8;--muted:#93a3c3;--accent:#38bdf8;--accent-d:#0284c7;--ok:#22c55e;--warn:#f59e0b;--bad:#ef4444;--r:12px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--accent)}
+code{background:#0b1322;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:13px;word-break:break-all}
+header{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+header h1{font-size:18px;margin:0;flex:1}
+.conn{font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.conn.ok{color:var(--ok);border-color:#1f5c3a}.conn.bad{color:var(--bad);border-color:#6b2a2a}
+nav{display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel);overflow-x:auto}
+nav button{background:none;border:0;color:var(--muted);padding:9px 14px;border-radius:9px;font:inherit;cursor:pointer;white-space:nowrap}
+nav button.on{background:var(--panel2);color:var(--text);font-weight:600}
+main{max-width:1100px;margin:0 auto;padding:16px}
+section.tab{display:none}section.tab.on{display:block}
+h2{font-size:17px;margin:4px 0 12px}h3{font-size:15px;margin:0 0 8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.grid{display:grid;gap:12px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.g3{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.stat b{display:block;font-size:24px}.stat span{color:var(--muted);font-size:13px}
+label{display:block;font-size:13px;color:var(--muted);margin:0 0 4px}
+input,select,textarea{width:100%;background:#0b1322;border:1px solid var(--line);color:var(--text);border-radius:9px;padding:9px 10px;font:inherit}
+textarea{min-height:90px;resize:vertical}
+input[type=file]{padding:7px}
+.field{margin-bottom:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>*{flex:0 0 auto}.grow{flex:1 1 180px!important}
+button.b,a.b,label.b{display:inline-block;background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:8px 13px;border-radius:9px;font:inherit;cursor:pointer;text-decoration:none}
+button.b:hover,a.b:hover,label.b:hover{border-color:var(--accent)}
+.p{background:var(--accent-d)!important;border-color:var(--accent-d)!important;color:#fff!important;font-weight:600}
+button.d{color:#fca5a5}
+.s{padding:5px 10px!important;font-size:13px!important}
+button:disabled{opacity:.5;cursor:default}
+.muted{color:var(--muted)}.small{font-size:13px}
+.pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.pill.Live,.pill.up{color:var(--ok);border-color:#1f5c3a}
+.pill.Planned{color:#c4b5fd;border-color:#4c3d7a}
+.pill.Offline,.pill.down{color:var(--bad);border-color:#6b2a2a}
+.pill.In{color:var(--warn);border-color:#6b4f12}
+.tool h3{margin-bottom:4px}
+.tool .meta{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 8px}
+.tool .url{font-size:12px;color:var(--muted);word-break:break-all;margin-bottom:8px}
+.tool .notes{font-size:13px;color:var(--muted);margin-bottom:8px;white-space:pre-wrap}
+table{width:100%;border-collapse:collapse}
+td,th{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:middle}
+th{color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.fname{cursor:pointer;word-break:break-all}.fname:hover{color:var(--accent)}
+.crumbs{display:flex;gap:4px;flex-wrap:wrap;align-items:center;font-size:14px}
+.crumbs a{cursor:pointer;text-decoration:none}
+.drop{border:2px dashed var(--line);border-radius:var(--r);padding:16px;text-align:center;color:var(--muted);margin-bottom:12px}
+.drop.over{border-color:var(--accent);color:var(--text)}
+.note{border-left:3px solid var(--warn);padding:8px 12px;background:#1d1a10;border-radius:6px;font-size:13px;margin-bottom:12px}
+.note.info{border-color:var(--accent);background:#0f2233}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:var(--r);padding:0;width:min(560px,94vw)}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+dialog form{padding:16px}
+#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);padding:10px 16px;border-radius:10px;display:none;z-index:50;max-width:92vw}
+#toast.bad{border-color:var(--bad)}
+.quick{display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);text-decoration:none;color:var(--text)}
+.quick span{font-size:12px;color:var(--muted)}
+.empty{color:var(--muted);text-align:center;padding:22px}
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px 14px;margin:8px 0}
+.chk{font-size:14px}.chk b{display:inline-block;width:20px}
+.chk.y b{color:var(--ok)}.chk.n b{color:var(--bad)}.chk.o b{color:var(--muted)}
+.bar{height:8px;background:#0b1322;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:4px 0 2px}
+.bar i{display:block;height:100%;background:var(--accent)}
+ol.steps{margin:0;padding-left:20px}ol.steps li{margin-bottom:14px}
+ol.steps li>p{margin:4px 0 8px;font-size:14px;color:var(--muted)}
+details summary{cursor:pointer;font-weight:600;font-size:15px;margin-bottom:8px}
+#dbTable,#appTable,#fileTable,#deployLog,#recentDeploys{overflow-x:auto}
+@media(max-width:600px){main{padding:12px}td,th{padding:8px 4px}.hide-sm{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>My Cloud Hub</h1>
+  <span id="srvConn" class="conn">Server: not set</span>
+  <span id="conn" class="conn">GitHub: not set</span>
+</header>
+<nav id="nav">
+  <button data-tab="home" class="on">Home</button>
+  <button data-tab="server">Server</button>
+  <button data-tab="tools">Tools</button>
+  <button data-tab="files">Cloud Files</button>
+  <button data-tab="deploy">Deploy</button>
+  <button data-tab="settings">Settings</button>
+</nav>
+<main>
+
+<!-- HOME -->
+<section class="tab on" id="tab-home">
+  <div class="grid g4" id="stats"></div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:10px"><h3 style="margin:0">Quick launch</h3><button class="b s" onclick="checkAllTools()">Check all live tools</button></div>
+    <div class="grid g3" id="quick"></div>
+  </div>
+  <div class="card">
+    <h3>Recent deploys</h3>
+    <div id="recentDeploys"></div>
+  </div>
+</section>
+
+<!-- SERVER -->
+<section class="tab" id="tab-server">
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:6px"><h3 style="margin:0">My Cloud Server</h3><div class="row"><button class="b s" onclick="refreshServer()">Refresh</button><button class="b s" onclick="testAI()">Test AI key</button></div></div>
+    <div id="srvStatus" class="small muted">Not connected. Follow the setup steps below, then add the server address and password in Settings.</div>
+  </div>
+
+  <div class="card">
+    <details id="setupBox">
+      <summary>Setup steps (one time)</summary>
+      <ol class="steps">
+        <li><b>Create the database.</b>
+          <p>In the Cloudflare dashboard open <b>Storage &amp; databases → D1 SQL database → Create</b>. Name it <code>my-cloud-db</code>. Open it and copy its <b>Database ID</b>.</p></li>
+        <li><b>Create the file storage.</b>
+          <p>Open <b>Storage &amp; databases → R2 object storage → Create bucket</b>. Name it <code>my-cloud-files</code>. Cloudflare may ask you to add a payment method first; the free plan covers 10 GB.</p></li>
+        <li><b>Fill these in.</b>
+          <div class="grid g2" style="margin-top:6px">
+            <div class="field"><label>Server name (Cloudflare Worker name)</label><input id="suName"></div>
+            <div class="field"><label>GitHub repository for the server code</label><input id="suRepo"></div>
+            <div class="field"><label>D1 database name</label><input id="suDbName"></div>
+            <div class="field"><label>D1 Database ID</label><input id="suDbId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
+            <div class="field"><label>R2 bucket name</label><input id="suBucket"></div>
+          </div></li>
+        <li><b>Send the server code to GitHub.</b>
+          <p>Needs GitHub connected in Settings. This creates a private repository and puts the server code in it. Use the same button later to install updates; Cloudflare redeploys automatically.</p>
+          <div class="row"><button class="b p" id="pushSrvBtn" onclick="pushServerCode()">Push server code to GitHub</button><span class="small muted" id="pushSrvStatus"></span></div></li>
+        <li><b>Connect it in Cloudflare.</b>
+          <p>Open <b>Workers &amp; Pages → Create application → GitHub</b> (import a repository). Pick the repository from step 4 and choose <b>Save and Deploy</b>. Keep the project name the same as the server name in step 3.</p></li>
+        <li><b>Add your secrets.</b>
+          <p>Open the new Worker → <b>Settings → Variables and Secrets → Add</b>, type <b>Secret</b>. Add <code>HUB_PASSWORD</code> (use the generated one below), <code>ANTHROPIC_API_KEY</code> (your one Anthropic key), and if you want email through the server, <code>EMAILJS_PUBLIC_KEY</code> and <code>EMAILJS_PRIVATE_KEY</code>.</p>
+          <div class="row"><button class="b" onclick="genPassword()">Generate a strong password</button><code id="genPw" style="display:none"></code><button class="b s" id="copyPw" style="display:none" onclick="copyText(state.settings.serverPassword)">Copy</button></div></li>
+        <li><b>Connect the hub.</b>
+          <p>Copy the Worker address (it looks like <code>https://my-cloud-server.yourname.workers.dev</code>) into <b>Settings → My Cloud Server</b>, then Save &amp; test.</p></li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px"><h3 style="margin:0">Database</h3><button class="b s" onclick="loadDb()">Refresh</button></div>
+    <p class="small muted" style="margin-top:0">Each tool saves its records here, grouped by tool and collection.</p>
+    <div id="dbTable"><div class="empty">Connect the server to see your data.</div></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px"><h3 style="margin:0">Apps running on the server</h3><button class="b s" onclick="loadApps()">Refresh</button></div>
+    <p class="small muted" style="margin-top:0">Deploy a tool with target <b>My Server</b> and it runs here 24/7 at its own address.</p>
+    <div id="appTable"><div class="empty">Connect the server to see hosted apps.</div></div>
+  </div>
+
+  <div class="card">
+    <h3>Live room invites</h3>
+    <p class="small muted" style="margin-top:0">Live rooms carry calls and messages. You join with your password; guests join with an invite code that expires.</p>
+    <div class="grid g2">
+      <div class="field"><label>Room name</label><input id="roomName" placeholder="e.g. family-call"></div>
+      <div class="field"><label>Invite lasts</label><select id="roomHours"><option value="2">2 hours</option><option value="24" selected>1 day</option><option value="168">1 week</option><option value="720">30 days</option></select></div>
+    </div>
+    <div class="row"><button class="b" onclick="makeInvite()">Create invite code</button><button class="b" onclick="whoInRoom()">Who's in this room</button></div>
+    <div id="inviteOut" class="small" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section class="tab" id="tab-tools">
+  <div class="row" style="margin-bottom:12px">
+    <input class="grow" id="toolSearch" placeholder="Search tools" oninput="renderTools()">
+    <select id="toolCat" onchange="renderTools()" style="width:auto"></select>
+    <select id="toolStat" onchange="renderTools()" style="width:auto"></select>
+    <button class="b p" onclick="editTool()">Add tool</button>
+  </div>
+  <div class="grid g3" id="toolList"></div>
+</section>
+
+<!-- FILES -->
+<section class="tab" id="tab-files">
+  <div id="filesWarn"></div>
+  <div class="card">
+    <div class="row" style="margin-bottom:10px">
+      <div class="crumbs grow" id="crumbs"></div>
+      <span class="pill" id="fileLoc"></span>
+      <input id="fileFilter" placeholder="Filter this folder" oninput="renderFiles()" style="width:170px">
+    </div>
+    <div class="drop" id="drop">Drop files here, or <label for="upFiles" style="display:inline;color:var(--accent);cursor:pointer">choose files</label> to upload to this folder
+      <input type="file" id="upFiles" multiple style="display:none" onchange="uploadFiles(this.files);this.value=''">
+    </div>
+    <div class="row" style="margin-bottom:10px">
+      <button class="b s" onclick="newFolder()">New folder</button>
+      <button class="b s" onclick="loadFiles()">Refresh</button>
+      <span class="small muted" id="upStatus"></span>
+    </div>
+    <div id="fileTable"></div>
+  </div>
+</section>
+
+<!-- DEPLOY -->
+<section class="tab" id="tab-deploy">
+  <div class="note info">Deploy puts a tool online so you can open it from any device. <b>My Server</b> runs it on your Cloudflare server next to your data; <b>GitHub Pages</b> hosts it on GitHub. Either way the address is public, so keep personal data in the tool's saved data, never written into the file itself.</div>
+  <div class="card">
+    <h3>Deploy a file</h3>
+    <div class="grid g2">
+      <div class="field"><label>Deploy to</label><select id="dTarget" onchange="dTargetChanged()"><option value="server">My Server</option><option value="github">GitHub Pages</option></select></div>
+      <div class="field gh-only"><label>Repository</label><select id="dRepo" onchange="dRepoChanged()"></select></div>
+      <div class="field gh-only"><label>Branch</label><input id="dBranch"></div>
+      <div class="field"><label>File name / path (e.g. CaseWork.html)</label><input id="dPath"></div>
+      <div class="field"><label>Link to tool (updates its URL after deploy)</label><select id="dTool"></select></div>
+    </div>
+    <div class="field"><label>File</label><input type="file" id="dFile" accept=".html,.htm,.js,.css,.json,.txt,.md,.png,.jpg,.jpeg,.svg,.ico,.webp" onchange="dFileChanged()"></div>
+    <div class="field gh-only"><label>Commit message</label><input id="dMsg"></div>
+    <div class="row"><button class="b p" id="dGo" onclick="deployFile()">Deploy</button><span class="small muted" id="dStatus"></span></div>
+  </div>
+  <div class="card gh-only">
+    <h3>GitHub Pages for this repository</h3>
+    <div id="pagesInfo" class="small muted">Pick a repository above, then check.</div>
+    <div class="row" style="margin-top:10px"><button class="b s" onclick="checkPages()">Check Pages status</button><button class="b s" id="enablePagesBtn" style="display:none" onclick="enablePages()">Turn on GitHub Pages</button></div>
+  </div>
+  <div class="card gh-only">
+    <h3>Create a new repository</h3>
+    <div class="grid g2">
+      <div class="field"><label>Name</label><input id="nrName" placeholder="e.g. casework"></div>
+      <div class="field"><label>Visibility</label><select id="nrVis"><option value="public">Public (free GitHub Pages)</option><option value="private">Private (Pages needs a paid plan)</option></select></div>
+    </div>
+    <button class="b" onclick="createRepo()">Create repository</button>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px"><h3 style="margin:0">Deploy history</h3><button class="b s d" onclick="clearDeploys()">Clear history</button></div>
+    <div id="deployLog"></div>
+  </div>
+</section>
+
+<!-- SETTINGS -->
+<section class="tab" id="tab-settings">
+  <div class="card">
+    <h3>My Cloud Server</h3>
+    <div class="grid g2">
+      <div class="field"><label>Server address</label><input id="sSrvUrl" placeholder="https://my-cloud-server.yourname.workers.dev"></div>
+      <div class="field"><label>Server password (HUB_PASSWORD)</label><div class="row"><input class="grow" id="sSrvPw" type="password" autocomplete="off"><button class="b s" onclick="togglePw('sSrvPw',this)">Show</button></div></div>
+      <div class="field"><label>Cloud Files location</label><select id="sStoreMode"><option value="server">My Server (10 GB free)</option><option value="github">GitHub storage repository</option></select></div>
+    </div>
+    <div class="row"><button class="b p" onclick="saveServerSettings()">Save &amp; test server</button></div>
+    <p class="small muted" style="margin-bottom:0">The password stays in this browser only. It is never included in exports or sync.</p>
+  </div>
+  <div class="card">
+    <h3>GitHub connection</h3>
+    <p class="small muted">Create a fine-grained token at github.com → Settings → Developer settings → Personal access tokens → Fine-grained tokens. Give it access to <b>All repositories</b> with these repository permissions: <b>Contents</b> (read and write), <b>Pages</b> (read and write), <b>Administration</b> (read and write, needed to create repos). The token stays in this browser only and is never included in exports or sync.</p>
+    <div class="grid g2">
+      <div class="field"><label>GitHub username</label><input id="sUser" placeholder="filled in when you test"></div>
+      <div class="field"><label>Personal access token</label><div class="row"><input class="grow" id="sToken" type="password" autocomplete="off"><button class="b s" onclick="togglePw('sToken',this)">Show</button></div></div>
+    </div>
+    <div class="row"><button class="b p" onclick="saveSettings(true)">Save &amp; test connection</button><button class="b" onclick="refreshRepos()">Refresh repository list</button><span class="small muted" id="repoCount"></span></div>
+  </div>
+  <div class="card">
+    <h3>GitHub storage</h3>
+    <div class="note">Used when Cloud Files location is GitHub, and for sync when no server is connected. This repository should be <b>private</b>.</div>
+    <div class="grid g2">
+      <div class="field"><label>Storage repository</label><select id="sStore"></select></div>
+      <div class="field"><label>Branch</label><input id="sStoreBranch"></div>
+      <div class="field"><label>Top folder for your files</label><input id="sStoreRoot"></div>
+      <div class="field"><label>Default deploy branch</label><input id="sDeployBranch"></div>
+    </div>
+    <div class="row"><button class="b p" onclick="saveSettings()">Save</button><button class="b" onclick="createStorageRepo()">Create a private storage repo</button></div>
+  </div>
+  <div class="card">
+    <h3>Dropdown lists</h3>
+    <p class="small muted">One item per line. These feed the dropdowns on the Tools tab.</p>
+    <div class="grid g2">
+      <div class="field"><label>Categories</label><textarea id="sCats"></textarea></div>
+      <div class="field"><label>Statuses</label><textarea id="sStats"></textarea></div>
+      <div class="field"><label>Hosting types</label><textarea id="sHosts"></textarea></div>
+    </div>
+    <button class="b p" onclick="saveLists()">Save lists</button>
+  </div>
+  <div class="card">
+    <h3>Sync between devices</h3>
+    <p class="small muted">Saves your tools list, dropdown lists, deploy history and settings (never your password or token) so your Chromebook, phone and laptop show the same hub. <span id="syncWhere"></span></p>
+    <div class="row"><button class="b" onclick="cloudSave()">Save hub to cloud</button><button class="b" onclick="cloudLoad()">Load hub from cloud</button></div>
+  </div>
+  <div class="card">
+    <h3>Backup</h3>
+    <div class="row"><button class="b" onclick="exportData()">Export backup (.json)</button><label class="b" style="margin:0;color:var(--text);font-size:15px">Import backup<input type="file" accept=".json" style="display:none" onchange="importData(this.files[0]);this.value=''"></label></div>
+  </div>
+</section>
+</main>
+
+<dialog id="toolDlg">
+  <form method="dialog" onsubmit="return false">
+    <h2 id="tdTitle">Tool</h2>
+    <div class="field"><label>Name</label><input id="tdName" required></div>
+    <div class="field"><label>Live URL</label><input id="tdUrl" placeholder="https://..."></div>
+    <div class="grid g2">
+      <div class="field"><label>Category</label><select id="tdCat"></select></div>
+      <div class="field"><label>Status</label><select id="tdStat"></select></div>
+      <div class="field"><label>Hosting</label><select id="tdHost"></select></div>
+      <div class="field"><label>Repository</label><select id="tdRepo"></select></div>
+    </div>
+    <div class="field"><label>File path</label><input id="tdPath" placeholder="e.g. CaseWork.html"></div>
+    <div class="field"><label>Notes</label><textarea id="tdNotes" style="min-height:60px"></textarea></div>
+    <div class="row" style="justify-content:flex-end"><button class="b" onclick="toolDlg.close()">Cancel</button><button class="b p" onclick="saveTool()">Save</button></div>
+  </form>
+</dialog>
+<div id="toast"></div>
+
+<!-- Server code that "Push server code to GitHub" installs. Do not edit by hand. -->
+<script type="text/plain" id="serverWorkerJs">
+// My Cloud Server — Cloudflare Worker
+// One server for all of your tools: database (D1), file storage (R2),
+// hidden API keys (secrets), live rooms (Durable Objects) and app hosting.
+//
+// Secrets to add in Cloudflare (Worker → Settings → Variables and Secrets):
+//   HUB_PASSWORD        required — the password your tools use to reach the server
+//   ANTHROPIC_API_KEY   optional — your one Anthropic key, shared by every tool
+//   EMAILJS_PUBLIC_KEY  optional — EmailJS public key
+//   EMAILJS_PRIVATE_KEY optional — EmailJS private key (Account → Security)
+
+import { DurableObject } from "cloudflare:workers";
+
+const VERSION = "1.0.0";
+const MAX_INLINE = 900000;           // record data larger than this is kept in file storage
+const NAME_RE = /^[A-Za-z0-9._-]{1,64}$/;
+const MAX_WS_MESSAGE = 65536;
+
+/* ------------------------------------------------------------------ */
+/* Entry point                                                         */
+/* ------------------------------------------------------------------ */
+export default {
+  async fetch(req, env) {
+    if (req.method === "OPTIONS") return cors(new Response(null, { status: 204 }), req);
+    let res;
+    try {
+      res = await route(req, env, new URL(req.url));
+    } catch (e) {
+      res = json({ error: e.message || "Server error" }, e.status || 500);
+    }
+    if (res.status === 101) return res;   // WebSocket upgrade: pass through untouched
+    return cors(res, req);
+  },
+};
+
+function cors(res, req) {
+  const r = new Response(res.body, res);
+  r.headers.set("Access-Control-Allow-Origin", req.headers.get("Origin") || "*");
+  r.headers.set("Vary", "Origin");
+  r.headers.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  r.headers.set("Access-Control-Allow-Headers", "Authorization,Content-Type,anthropic-version,anthropic-beta");
+  r.headers.set("Access-Control-Expose-Headers", "Content-Length,Content-Type,X-Uploaded");
+  r.headers.set("Access-Control-Max-Age", "86400");
+  return r;
+}
+const json = (data, status = 200) =>
+  new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+function err(status, message) { const e = new Error(message); e.status = status; return e; }
+const checkName = (v, what) => { if (!NAME_RE.test(v || "")) throw err(400, `Invalid ${what} name. Use letters, numbers, dot, dash or underscore.`); return v; };
+
+/* ------------------------------------------------------------------ */
+/* Auth                                                                */
+/* ------------------------------------------------------------------ */
+async function sha256(s) { return new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s))); }
+async function safeEqual(a, b) {
+  const [x, y] = await Promise.all([sha256(a), sha256(b)]);
+  return crypto.subtle.timingSafeEqual(x, y);
+}
+async function isOwner(token, env) {
+  if (!env.HUB_PASSWORD) throw err(503, "Server password not set. Add the HUB_PASSWORD secret in Cloudflare.");
+  return !!token && (await safeEqual(token, env.HUB_PASSWORD));
+}
+async function requireOwner(req, env) {
+  const h = req.headers.get("Authorization") || "";
+  if (!(await isOwner(h.startsWith("Bearer ") ? h.slice(7) : "", env))) throw err(401, "Wrong server password.");
+}
+const b64url = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+async function hmac(env, text) {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode("room-invite:" + env.HUB_PASSWORD), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  return b64url(new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(text))));
+}
+async function makeInvite(env, room, hours) {
+  const exp = Date.now() + Math.min(Math.max(hours || 24, 1), 24 * 30) * 3600000;
+  return `${exp}.${await hmac(env, room + "|" + exp)}`;
+}
+async function checkInvite(env, room, invite) {
+  const [exp, sig] = String(invite || "").split(".");
+  if (!exp || !sig || Number(exp) < Date.now()) return false;
+  return safeEqual(sig, await hmac(env, room + "|" + exp));
+}
+
+/* ------------------------------------------------------------------ */
+/* Router                                                              */
+/* ------------------------------------------------------------------ */
+async function route(req, env, url) {
+  const p = url.pathname;
+  const m = req.method;
+
+  if (p === "/" || p === "") return home();
+  if (p === "/api/health") return health(env);
+  if (p.startsWith("/apps/") || p === "/apps") return serveApp(env, p);
+
+  let mm;
+  if ((mm = p.match(/^\/api\/rooms\/([^/]+)\/ws$/))) return roomSocket(req, env, url, decodeURIComponent(mm[1]));
+
+  if (!p.startsWith("/api/")) throw err(404, "Not found");
+  await requireOwner(req, env);
+
+  if (p === "/api/status" && m === "GET") return status(env);
+
+  // Database
+  if (p === "/api/db" && m === "GET") return dbOverview(env);
+  if ((mm = p.match(/^\/api\/db\/([^/]+)$/)) && m === "DELETE") return dbDeleteApp(env, url, checkName(decodeURIComponent(mm[1]), "app"));
+  if ((mm = p.match(/^\/api\/db\/([^/]+)\/([^/]+)$/))) {
+    const app = checkName(decodeURIComponent(mm[1]), "app"), coll = checkName(decodeURIComponent(mm[2]), "collection");
+    if (m === "GET") return dbList(env, url, app, coll);
+    if (m === "POST") return dbBulk(req, env, app, coll);
+    if (m === "DELETE") return dbClear(env, app, coll);
+  }
+  if ((mm = p.match(/^\/api\/db\/([^/]+)\/([^/]+)\/(.+)$/))) {
+    const app = checkName(decodeURIComponent(mm[1]), "app"), coll = checkName(decodeURIComponent(mm[2]), "collection");
+    const id = decodeURIComponent(mm[3]);
+    if (!id || id.length > 256 || /[\x00-\x1f]/.test(id)) throw err(400, "Invalid record id.");
+    if (m === "GET") return dbGet(env, app, coll, id);
+    if (m === "PUT") return dbPut(req, env, app, coll, id);
+    if (m === "DELETE") return dbDelete(env, app, coll, id);
+  }
+
+  // Files
+  if (p === "/api/files" && m === "GET") return filesList(env, url);
+  if (p.startsWith("/api/files/")) {
+    const key = decodeURIComponent(p.slice("/api/files/".length));
+    if (!key || key.length > 1000) throw err(400, "Invalid file path.");
+    if (m === "GET") return fileGet(env, key);
+    if (m === "PUT") return filePut(req, env, key);
+    if (m === "DELETE") return fileDelete(env, url, key);
+  }
+
+  // Hidden keys
+  if (p === "/api/ai" && m === "POST") return aiProxy(req, env);
+  if (p === "/api/email" && m === "POST") return emailProxy(req, env);
+
+  // Rooms
+  if ((mm = p.match(/^\/api\/rooms\/([^/]+)\/invite$/)) && m === "POST") {
+    const room = checkName(decodeURIComponent(mm[1]), "room");
+    const body = await req.json().catch(() => ({}));
+    return json({ room, invite: await makeInvite(env, room, body.hours) });
+  }
+  if ((mm = p.match(/^\/api\/rooms\/([^/]+)$/)) && m === "GET") {
+    const room = checkName(decodeURIComponent(mm[1]), "room");
+    if (!env.ROOMS) throw err(503, "Live rooms are not set up on this server.");
+    return env.ROOMS.get(env.ROOMS.idFromName(room)).fetch("https://room/info");
+  }
+
+  throw err(404, "Not found");
+}
+
+/* ------------------------------------------------------------------ */
+/* Public pages                                                        */
+/* ------------------------------------------------------------------ */
+function home() {
+  return new Response(`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Cloud Server</title>
+<body style="font:16px system-ui;background:#0d1526;color:#e7edf8;display:grid;place-items:center;min-height:90vh;margin:0">
+<div style="text-align:center"><h1 style="font-size:22px">My Cloud Server is running</h1><p style="color:#93a3c3">Version ${VERSION}. Manage it from My Cloud Hub.</p></div></body>`,
+    { headers: { "Content-Type": "text/html; charset=utf-8" } });
+}
+function health(env) {
+  return json({
+    ok: true, version: VERSION, time: Date.now(),
+    setup: {
+      database: !!env.DB, files: !!env.FILES, rooms: !!env.ROOMS, password: !!env.HUB_PASSWORD,
+      anthropic: !!env.ANTHROPIC_API_KEY, emailjs: !!(env.EMAILJS_PUBLIC_KEY && env.EMAILJS_PRIVATE_KEY),
+    },
+  });
+}
+const TYPES = { html: "text/html; charset=utf-8", htm: "text/html; charset=utf-8", css: "text/css", js: "text/javascript", json: "application/json",
+  png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif", webp: "image/webp", svg: "image/svg+xml", ico: "image/x-icon",
+  pdf: "application/pdf", txt: "text/plain; charset=utf-8", md: "text/plain; charset=utf-8", mp4: "video/mp4", mp3: "audio/mpeg" };
+const typeFor = (key) => TYPES[(key.split(".").pop() || "").toLowerCase()] || "application/octet-stream";
+
+async function serveApp(env, path) {
+  if (!env.FILES) throw err(503, "File storage is not set up on this server.");
+  let key = "apps/" + decodeURIComponent(path.replace(/^\/apps\/?/, ""));
+  if (key.endsWith("/")) key += "index.html";
+  let obj = await env.FILES.get(key);
+  if (!obj && !/\.[a-z0-9]+$/i.test(key)) obj = await env.FILES.get(key + "/index.html");
+  if (!obj) return new Response("Not found", { status: 404 });
+  return new Response(obj.body, { headers: { "Content-Type": typeFor(key), "Cache-Control": "no-cache", "ETag": obj.httpEtag } });
+}
+
+/* ------------------------------------------------------------------ */
+/* Status                                                              */
+/* ------------------------------------------------------------------ */
+async function status(env) {
+  const out = { version: VERSION, time: Date.now(), database: null, files: null };
+  if (env.DB) {
+    await ensureSchema(env);
+    const r = await env.DB.prepare("SELECT COUNT(*) AS n, COALESCE(SUM(LENGTH(data)),0) AS bytes FROM records WHERE deleted=0").first();
+    out.database = { records: r.n, bytes: r.bytes };
+  }
+  if (env.FILES) {
+    let count = 0, bytes = 0, cursor, pages = 0, complete = true;
+    do {
+      const l = await env.FILES.list({ cursor, limit: 1000 });
+      for (const o of l.objects) { count++; bytes += o.size; }
+      cursor = l.truncated ? l.cursor : undefined;
+      if (++pages >= 20 && cursor) { complete = false; break; }
+    } while (cursor);
+    out.files = { count, bytes, complete };
+  }
+  return json(out);
+}
+
+/* ------------------------------------------------------------------ */
+/* Database (D1)                                                       */
+/* ------------------------------------------------------------------ */
+let schemaReady = false;
+async function ensureSchema(env) {
+  if (!env.DB) throw err(503, "The database is not set up on this server.");
+  if (schemaReady) return;
+  await env.DB.batch([
+    env.DB.prepare(`CREATE TABLE IF NOT EXISTS records (
+      app TEXT NOT NULL, coll TEXT NOT NULL, id TEXT NOT NULL,
+      data TEXT, ext INTEGER NOT NULL DEFAULT 0, deleted INTEGER NOT NULL DEFAULT 0,
+      updated INTEGER NOT NULL, PRIMARY KEY (app, coll, id))`),
+    env.DB.prepare("CREATE INDEX IF NOT EXISTS records_updated ON records (app, coll, updated)"),
+  ]);
+  schemaReady = true;
+}
+const extKey = (app, coll, id) => `_db/${app}/${coll}/${encodeURIComponent(id)}.json`;
+
+async function storeValue(env, app, coll, id, value) {
+  const text = JSON.stringify(value === undefined ? null : value);
+  if (text.length > MAX_INLINE) {
+    if (!env.FILES) throw err(413, "Record too large for the database and file storage is not set up.");
+    await env.FILES.put(extKey(app, coll, id), text, { httpMetadata: { contentType: "application/json" } });
+    return { data: null, ext: 1 };
+  }
+  return { data: text, ext: 0 };
+}
+async function loadValue(env, row) {
+  if (row.ext) {
+    const o = env.FILES && (await env.FILES.get(extKey(row.app, row.coll, row.id)));
+    return o ? JSON.parse(await o.text()) : null;
+  }
+  return row.data == null ? null : JSON.parse(row.data);
+}
+function nextTime(prev) { const t = Date.now(); return t > prev ? t : prev + 1; }
+
+async function dbOverview(env) {
+  await ensureSchema(env);
+  const { results } = await env.DB.prepare(
+    "SELECT app, coll, SUM(CASE WHEN deleted=0 THEN 1 ELSE 0 END) AS records, COALESCE(SUM(CASE WHEN deleted=0 THEN LENGTH(data) END),0) AS bytes, MAX(updated) AS updated FROM records GROUP BY app, coll ORDER BY app, coll"
+  ).all();
+  return json({ collections: results });
+}
+async function dbList(env, url, app, coll) {
+  await ensureSchema(env);
+  const since = Number(url.searchParams.get("since") || 0);
+  const withDeleted = since > 0 || url.searchParams.get("include_deleted") === "1";
+  const now = Date.now();
+  const { results } = await env.DB.prepare(
+    `SELECT app, coll, id, data, ext, deleted, updated FROM records WHERE app=? AND coll=? AND updated>? ${withDeleted ? "" : "AND deleted=0"} ORDER BY updated`
+  ).bind(app, coll, since).all();
+  const items = [];
+  for (const r of results) items.push({ id: r.id, updated: r.updated, deleted: !!r.deleted, data: r.deleted ? null : await loadValue(env, r) });
+  return json({ items, now });
+}
+async function dbGet(env, app, coll, id) {
+  await ensureSchema(env);
+  const r = await env.DB.prepare("SELECT app, coll, id, data, ext, deleted, updated FROM records WHERE app=? AND coll=? AND id=?").bind(app, coll, id).first();
+  if (!r || r.deleted) throw err(404, "Record not found.");
+  return json({ id, updated: r.updated, data: await loadValue(env, r) });
+}
+async function writeRecord(env, app, coll, id, value, deleted) {
+  const prev = await env.DB.prepare("SELECT updated, ext FROM records WHERE app=? AND coll=? AND id=?").bind(app, coll, id).first();
+  const updated = nextTime(prev ? prev.updated : 0);
+  let stored = { data: null, ext: 0 };
+  if (!deleted) stored = await storeValue(env, app, coll, id, value);
+  if (prev && prev.ext && (deleted || !stored.ext) && env.FILES) await env.FILES.delete(extKey(app, coll, id));
+  await env.DB.prepare(
+    "INSERT INTO records (app, coll, id, data, ext, deleted, updated) VALUES (?,?,?,?,?,?,?) ON CONFLICT(app, coll, id) DO UPDATE SET data=excluded.data, ext=excluded.ext, deleted=excluded.deleted, updated=excluded.updated"
+  ).bind(app, coll, id, stored.data, stored.ext, deleted ? 1 : 0, updated).run();
+  return updated;
+}
+async function dbPut(req, env, app, coll, id) {
+  await ensureSchema(env);
+  let value;
+  try { value = await req.json(); } catch { throw err(400, "Body must be JSON."); }
+  return json({ id, updated: await writeRecord(env, app, coll, id, value, false) });
+}
+async function dbDelete(env, app, coll, id) {
+  await ensureSchema(env);
+  return json({ id, deleted: true, updated: await writeRecord(env, app, coll, id, null, true) });
+}
+async function dbBulk(req, env, app, coll) {
+  await ensureSchema(env);
+  let body;
+  try { body = await req.json(); } catch { throw err(400, "Body must be JSON."); }
+  const items = Array.isArray(body && body.items) ? body.items : null;
+  if (!items) throw err(400, 'Send {"items":[{"id":"...","data":...}]}');
+  if (items.length > 500) throw err(413, "Send at most 500 records at a time.");
+  const out = [];
+  for (const it of items) {
+    const id = String(it.id ?? "");
+    if (!id || id.length > 256 || /[\x00-\x1f]/.test(id)) throw err(400, "Every record needs a valid id.");
+    out.push({ id, updated: await writeRecord(env, app, coll, id, it.data, !!it.deleted) });
+  }
+  return json({ saved: out.length, items: out });
+}
+async function dbClear(env, app, coll) {
+  await ensureSchema(env);
+  await deleteExt(env, `_db/${app}/${coll}/`);
+  const r = await env.DB.prepare("DELETE FROM records WHERE app=? AND coll=?").bind(app, coll).run();
+  return json({ cleared: r.meta ? r.meta.changes : null });
+}
+async function dbDeleteApp(env, url, app) {
+  if (url.searchParams.get("confirm") !== app) throw err(400, `Add ?confirm=${app} to delete all data for this app.`);
+  await ensureSchema(env);
+  await deleteExt(env, `_db/${app}/`);
+  const r = await env.DB.prepare("DELETE FROM records WHERE app=?").bind(app).run();
+  return json({ deleted: r.meta ? r.meta.changes : null });
+}
+async function deleteExt(env, prefix) {
+  if (!env.FILES) return;
+  let cursor;
+  do {
+    const l = await env.FILES.list({ prefix, cursor, limit: 1000 });
+    if (l.objects.length) await env.FILES.delete(l.objects.map((o) => o.key));
+    cursor = l.truncated ? l.cursor : undefined;
+  } while (cursor);
+}
+
+/* ------------------------------------------------------------------ */
+/* Files (R2)                                                          */
+/* ------------------------------------------------------------------ */
+function needFiles(env) { if (!env.FILES) throw err(503, "File storage is not set up on this server."); }
+async function filesList(env, url) {
+  needFiles(env);
+  const prefix = url.searchParams.get("prefix") || "";
+  const l = await env.FILES.list({ prefix, delimiter: "/", cursor: url.searchParams.get("cursor") || undefined, limit: 1000, include: ["httpMetadata"] });
+  return json({
+    prefix,
+    folders: l.delimitedPrefixes || [],
+    files: l.objects.map((o) => ({ key: o.key, size: o.size, uploaded: o.uploaded, type: (o.httpMetadata && o.httpMetadata.contentType) || typeFor(o.key) })),
+    cursor: l.truncated ? l.cursor : null,
+  });
+}
+async function fileGet(env, key) {
+  needFiles(env);
+  const o = await env.FILES.get(key);
+  if (!o) throw err(404, "File not found.");
+  return new Response(o.body, { headers: { "Content-Type": (o.httpMetadata && o.httpMetadata.contentType) || typeFor(key), "Content-Length": String(o.size), "Cache-Control": "no-store" } });
+}
+async function filePut(req, env, key) {
+  needFiles(env);
+  const ct = req.headers.get("Content-Type");
+  const o = await env.FILES.put(key, req.body || "", { httpMetadata: { contentType: ct && ct !== "application/octet-stream" ? ct : typeFor(key) } });
+  return json({ key, size: o.size, uploaded: o.uploaded });
+}
+async function fileDelete(env, url, key) {
+  needFiles(env);
+  if (key.endsWith("/")) {
+    if (url.searchParams.get("recursive") !== "1") throw err(400, "Add ?recursive=1 to delete a folder and everything in it.");
+    let n = 0, cursor;
+    do {
+      const l = await env.FILES.list({ prefix: key, cursor, limit: 1000 });
+      if (l.objects.length) { await env.FILES.delete(l.objects.map((o) => o.key)); n += l.objects.length; }
+      cursor = l.truncated ? l.cursor : undefined;
+    } while (cursor);
+    return json({ deleted: n });
+  }
+  await env.FILES.delete(key);
+  return json({ deleted: 1 });
+}
+
+/* ------------------------------------------------------------------ */
+/* Hidden API keys                                                     */
+/* ------------------------------------------------------------------ */
+async function aiProxy(req, env) {
+  if (!env.ANTHROPIC_API_KEY) throw err(503, "Add the ANTHROPIC_API_KEY secret in Cloudflare to use AI.");
+  const headers = { "content-type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": req.headers.get("anthropic-version") || "2023-06-01" };
+  const beta = req.headers.get("anthropic-beta");
+  if (beta) headers["anthropic-beta"] = beta;
+  const up = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers, body: req.body });
+  return new Response(up.body, { status: up.status, headers: { "Content-Type": up.headers.get("Content-Type") || "application/json", "Cache-Control": "no-store" } });
+}
+async function emailProxy(req, env) {
+  if (!env.EMAILJS_PRIVATE_KEY || !env.EMAILJS_PUBLIC_KEY) throw err(503, "Add the EMAILJS_PUBLIC_KEY and EMAILJS_PRIVATE_KEY secrets in Cloudflare to send email.");
+  const b = await req.json().catch(() => null);
+  if (!b || !b.service_id || !b.template_id) throw err(400, "Send service_id, template_id and template_params.");
+  const up = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ service_id: b.service_id, template_id: b.template_id, template_params: b.template_params || {}, user_id: env.EMAILJS_PUBLIC_KEY, accessToken: env.EMAILJS_PRIVATE_KEY }),
+  });
+  const text = await up.text();
+  return json({ ok: up.ok, status: up.status, message: text }, up.ok ? 200 : 502);
+}
+
+/* ------------------------------------------------------------------ */
+/* Live rooms (Durable Objects)                                        */
+/* ------------------------------------------------------------------ */
+async function roomSocket(req, env, url, room) {
+  checkName(room, "room");
+  if (!env.ROOMS) throw err(503, "Live rooms are not set up on this server.");
+  if ((req.headers.get("Upgrade") || "").toLowerCase() !== "websocket") throw err(426, "Connect with a WebSocket.");
+  let role = null;
+  if (await isOwner(url.searchParams.get("token") || "", env)) role = "owner";
+  else if (await checkInvite(env, room, url.searchParams.get("invite"))) role = "guest";
+  if (!role) throw err(401, "Not allowed in this room.");
+  const name = (url.searchParams.get("name") || (role === "owner" ? "Host" : "Guest")).slice(0, 60);
+  const fwd = new URL("https://room/ws");
+  fwd.searchParams.set("role", role);
+  fwd.searchParams.set("name", name);
+  return env.ROOMS.get(env.ROOMS.idFromName(room)).fetch(new Request(fwd, req));
+}
+
+export class Room extends DurableObject {
+  peers() { return this.ctx.getWebSockets().map((ws) => ws.deserializeAttachment()).filter(Boolean); }
+  send(ws, msg) { try { ws.send(JSON.stringify(msg)); } catch {} }
+  broadcast(msg, exceptId) {
+    for (const ws of this.ctx.getWebSockets()) { const a = ws.deserializeAttachment(); if (a && a.id !== exceptId) this.send(ws, msg); }
+  }
+  async fetch(req) {
+    const url = new URL(req.url);
+    if (url.pathname === "/info") return json({ peers: this.peers() });
+    const pair = new WebSocketPair();
+    const [client, server] = Object.values(pair);
+    const peer = { id: crypto.randomUUID().slice(0, 8), name: url.searchParams.get("name") || "Guest", role: url.searchParams.get("role") || "guest", joined: Date.now() };
+    this.ctx.acceptWebSocket(server);
+    server.serializeAttachment(peer);
+    this.send(server, { type: "welcome", you: peer, peers: this.peers().filter((p) => p.id !== peer.id) });
+    this.broadcast({ type: "join", peer }, peer.id);
+    return new Response(null, { status: 101, webSocket: client });
+  }
+  async webSocketMessage(ws, message) {
+    const from = ws.deserializeAttachment();
+    if (!from) return;
+    if (typeof message !== "string" || message.length > MAX_WS_MESSAGE) return this.send(ws, { type: "error", error: "Message too large." });
+    let msg;
+    try { msg = JSON.parse(message); } catch { return this.send(ws, { type: "error", error: "Messages must be JSON." }); }
+    if (msg && msg.type === "ping") return this.send(ws, { type: "pong", time: Date.now() });
+    const out = { ...msg, from: from.id, fromName: from.name };
+    if (msg && msg.to) {
+      for (const s of this.ctx.getWebSockets()) { const a = s.deserializeAttachment(); if (a && a.id === msg.to) this.send(s, out); }
+    } else this.broadcast(out, from.id);
+  }
+  async webSocketClose(ws) { this.leave(ws); }
+  async webSocketError(ws) { this.leave(ws); }
+  leave(ws) {
+    const a = ws.deserializeAttachment();
+    try { ws.close(1000, "bye"); } catch {}
+    if (a) { try { ws.serializeAttachment(null); } catch {} this.broadcast({ type: "leave", peer: a }, a.id); }
+  }
+}
+</script>
+
+<script>
+const LS_KEY='myCloudHub.v1';
+const GH_SYNC_PATH='.cloudhub/hub-data.json';
+const FREE={db:5*1024**3,files:10*1024**3};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const T=(name,cat,path,status,hosting,repo,notes)=>({id:uid(),name,url:'',repo:repo||'',path:path||'',category:cat,status:status||'In progress',hosting:hosting||'My Server',notes:notes||'',check:null});
+const DEFAULTS={
+  settings:{ghUser:'',ghToken:'',storageRepo:'',storageBranch:'main',storageRoot:'cloud',deployBranch:'main',repos:[],
+    serverUrl:'',serverPassword:'',storageMode:'server',deployTarget:'server',
+    srvName:'my-cloud-server',srvRepo:'my-cloud-server',srvDbName:'my-cloud-db',srvDbId:'',srvBucket:'my-cloud-files',
+    categories:['Work – Disaster Case Management','Work – Red Cross SAF','Work – SHA','Work – Other','Personal','Business / Nonprofit','Public site'],
+    statuses:['Live','In progress','Planned','Offline'],
+    hostings:['My Server','GitHub Pages','Local file only','Other host']},
+  tools:[
+    T('CaseWork – Disaster Case Manager System','Work – Disaster Case Management','CaseWork.html'),
+    T('SAF Caseworker Workstation','Work – Red Cross SAF','saf-caseworker-workstation.html'),
+    T('Resident Services Workstation','Work – SHA','Resident-Services-Workstation.html'),
+    T('Security & Tenant Incident Reporting System','Work – Other','Security-and-Tenant-Incident-Reporting-System.html'),
+    T('Donation Tax Manager','Personal','Donation-Tax-Manager.html'),
+    T('LLC Donation & Reimbursement Manager','Business / Nonprofit','LLC-Donation-Manager.html'),
+    T('Nonprofit Builder','Business / Nonprofit','Nonprofit-Builder.html'),
+    T('Car Rental System','Business / Nonprofit','','Planned'),
+    T('Movie Box','Public site','index.html','Live','GitHub Pages','movie-box'),
+    T('My Cards','Personal','','Live','GitHub Pages'),
+    T('MyHealthChart','Personal','MyHealthChart.html'),
+    T('Personal Planner Hub','Personal','Personal-Planner-Hub.html'),
+    T('My Planner & Mail','Personal','Personal-Planner-Mail.html'),
+    T('Private Meet','Personal','Private-Meet.html','In progress','My Server','','Was planned for Glitch; Glitch hosting ended July 2025.'),
+    T('UIX – Universal Intelligence Explorer','Personal','UIX.html')
+  ],
+  deploys:[]
+};
+let state=load();
+let cwd='';let files=[];let filesLoaded=false;let srvHealth=null;let srvOk=false;
+
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(LS_KEY));if(s&&s.settings){s.settings={...DEFAULTS.settings,...s.settings};s.tools=s.tools||[];s.deploys=s.deploys||[];
+    if(!s.settings.hostings.includes('My Server'))s.settings.hostings.unshift('My Server');return s;}}catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULTS));
+}
+function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state))}catch(e){toast('Could not save in this browser: '+e.message,true)}}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(msg,bad){const t=$('toast');t.textContent=msg;t.className=bad?'bad':'';t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',bad?6500:3200)}
+const fmtSize=n=>n==null?'':n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':n<1073741824?(n/1048576).toFixed(1)+' MB':(n/1073741824).toFixed(2)+' GB';
+const fmtDate=d=>d?new Date(d).toLocaleString([], {dateStyle:'medium',timeStyle:'short'}):'';
+const opts=(list,sel,blank)=>(blank!=null?`<option value="">${esc(blank)}</option>`:'')+list.map(v=>`<option${v===sel?' selected':''}>${esc(v)}</option>`).join('');
+const fullRepo=r=>!r?'':r.includes('/')?r:(state.settings.ghUser?state.settings.ghUser+'/'+r:r);
+const encPath=p=>p.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+const encKey=k=>k.split('/').map(encodeURIComponent).join('/');
+function togglePw(id,btn){const t=$(id);t.type=t.type==='password'?'text':'password';btn.textContent=t.type==='password'?'Show':'Hide'}
+async function copyText(t){try{await navigator.clipboard.writeText(t);toast('Copied')}catch(e){prompt('Copy this:',t)}}
+function saveBlob(b,name){const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}
+
+/* ---------- Tabs ---------- */
+$('nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b)showTab(b.dataset.tab)});
+function showTab(name){
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
+  document.querySelectorAll('section.tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+name));
+  if(name==='files'&&!filesLoaded)loadFiles();
+  if(name==='deploy')renderDeploy();
+  if(name==='settings')renderSettings();
+  if(name==='server')renderServerTab();
+  window.scrollTo(0,0);
+}
+
+/* ================= SERVER ================= */
+const srvBase=()=>state.settings.serverUrl.replace(/\/+$/,'');
+const srvReady=()=>!!(state.settings.serverUrl&&state.settings.serverPassword);
+async function srv(path,o={}){
+  const s=state.settings;
+  if(!s.serverUrl)throw new Error('Add your server address in Settings first.');
+  if(!o.public&&!s.serverPassword)throw new Error('Add your server password in Settings first.');
+  const headers={...(o.headers||{})};
+  if(!o.public)headers.Authorization='Bearer '+s.serverPassword;
+  let body=o.body;
+  if(o.json!==undefined){body=JSON.stringify(o.json);headers['Content-Type']='application/json'}
+  let res;
+  try{res=await fetch(srvBase()+path,{method:o.method||'GET',headers,body,cache:'no-store'})}
+  catch(e){throw new Error('Could not reach your server. Check the address in Settings and that the Worker is deployed.')}
+  if(o.raw&&res.ok)return res;
+  let data=null;try{data=await res.json()}catch(e){}
+  if(!res.ok){const e=new Error((data&&(data.error&&data.error.message||data.error))||('Server error '+res.status));e.status=res.status;throw e}
+  return data;
+}
+function setSrvBadge(kind,text){const c=$('srvConn');c.className='conn'+(kind?' '+kind:'');c.textContent=text}
+async function testServer(quiet){
+  if(!state.settings.serverUrl){srvOk=false;srvHealth=null;setSrvBadge('','Server: not set');renderServerStatus();return false}
+  try{
+    srvHealth=await srv('/api/health',{public:true});
+    if(!srvHealth||!srvHealth.ok)throw new Error('That address is not My Cloud Server.');
+    await srv('/api/status');
+    srvOk=true;setSrvBadge('ok','Server: online');
+  }catch(e){srvOk=false;setSrvBadge('bad',srvHealth?'Server: '+(e.status===401?'wrong password':'error'):'Server: offline');if(!quiet)toast(e.message,true)}
+  renderServerStatus();renderHome();return srvOk;
+}
+async function renderServerStatus(){
+  const box=$('srvStatus');
+  if(!state.settings.serverUrl){box.innerHTML='Not connected. Follow the setup steps below, then add the server address and password in Settings.';$('setupBox').open=true;return}
+  if(!srvHealth){box.innerHTML='Could not reach <code>'+esc(srvBase())+'</code>. Check the address, and that the Worker finished deploying in Cloudflare.';$('setupBox').open=true;return}
+  const s=srvHealth.setup||{};
+  const c=(ok,label,optional)=>`<div class="chk ${ok?'y':optional?'o':'n'}"><b>${ok?'✓':optional?'–':'✗'}</b>${label}</div>`;
+  let html=`<div>Address: <a href="${esc(srvBase())}" target="_blank" rel="noopener">${esc(srvBase())}</a> · version ${esc(srvHealth.version)} · ${srvOk?'<span style="color:var(--ok)">password accepted</span>':'<span style="color:var(--bad)">password not accepted</span>'}</div>
+  <div class="checks">${c(s.database,'Database (D1)')}${c(s.files,'File storage (R2)')}${c(s.rooms,'Live rooms')}${c(s.password,'Server password')}${c(s.anthropic,'Anthropic key',true)}${c(s.emailjs,'EmailJS keys',true)}</div>`;
+  if(srvOk){
+    try{
+      const st=await srv('/api/status');
+      const bar=(used,max,label)=>`<div style="margin-top:8px"><div class="row" style="justify-content:space-between"><span>${label}</span><span class="muted">${fmtSize(used)} of ${fmtSize(max)} free</span></div><div class="bar"><i style="width:${Math.min(100,used/max*100).toFixed(2)}%"></i></div></div>`;
+      if(st.database)html+=bar(st.database.bytes,FREE.db,'Database · '+st.database.records+' records');
+      if(st.files)html+=bar(st.files.bytes,FREE.files,'File storage · '+st.files.count+' files'+(st.files.complete?'':' (partial count)'));
+    }catch(e){html+=`<div class="small" style="color:var(--bad)">${esc(e.message)}</div>`}
+  }
+  box.innerHTML=html;
+  $('setupBox').open=!(srvOk&&s.database&&s.files&&s.password);
+}
+function renderServerTab(){
+  const s=state.settings;
+  $('suName').value=s.srvName;$('suRepo').value=s.srvRepo;$('suDbName').value=s.srvDbName;$('suDbId').value=s.srvDbId;$('suBucket').value=s.srvBucket;
+  if(s.serverPassword){$('genPw').textContent='••••••••••••';$('genPw').style.display='';$('copyPw').style.display=''}
+  renderServerStatus();
+  if(srvOk){loadDb();loadApps()}
+}
+async function refreshServer(){await testServer();if(srvOk){loadDb();loadApps()}}
+function genPassword(){
+  if(state.settings.serverPassword&&!confirm('Replace your current server password? You will also need to update HUB_PASSWORD in Cloudflare.'))return;
+  const b=crypto.getRandomValues(new Uint8Array(24));
+  const pw=btoa(String.fromCharCode(...b)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  state.settings.serverPassword=pw;save();
+  $('genPw').textContent=pw;$('genPw').style.display='';$('copyPw').style.display='';
+  toast('Password created and saved in Settings. Copy it into Cloudflare as HUB_PASSWORD.');
+}
+function wranglerToml(s){
+  return `name = "${s.srvName}"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "${s.srvDbName}"
+database_id = "${s.srvDbId}"
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "${s.srvBucket}"
+
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "Room"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
+`;
+}
+const SERVER_README=`# My Cloud Server
+
+Cloudflare Worker installed and updated by My Cloud Hub. Pushing to this repository redeploys the server.
+
+- \`worker.js\` — the server
+- \`wrangler.toml\` — links the server to its database (D1), file storage (R2) and live rooms
+
+Secrets live in Cloudflare (Worker → Settings → Variables and Secrets), never in this repository:
+HUB_PASSWORD, ANTHROPIC_API_KEY, EMAILJS_PUBLIC_KEY, EMAILJS_PRIVATE_KEY.
+`;
+async function pushServerCode(){
+  const s=state.settings;
+  s.srvName=$('suName').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');s.srvRepo=$('suRepo').value.trim().replace(/\s+/g,'-');
+  s.srvDbName=$('suDbName').value.trim();s.srvDbId=$('suDbId').value.trim();s.srvBucket=$('suBucket').value.trim().toLowerCase();save();renderServerTab();
+  if(!s.ghToken){toast('Connect GitHub in Settings first.',true);return}
+  if(!s.srvName||!s.srvRepo||!s.srvDbName||!s.srvBucket){toast('Fill in every field in step 3.',true);return}
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s.srvDbId)){toast('The D1 Database ID should look like xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx. Copy it from the database page in Cloudflare.',true);return}
+  const st=$('pushSrvStatus');$('pushSrvBtn').disabled=true;
+  try{
+    if(!s.ghUser)await testConnection();
+    const full=s.srvRepo.includes('/')?s.srvRepo:s.ghUser+'/'+s.srvRepo;
+    let repo;
+    try{repo=await gh(`/repos/${full}`)}catch(e){
+      if(e.status!==404)throw e;
+      st.textContent='Creating private repository…';
+      repo=await gh('/user/repos',{method:'POST',body:{name:full.split('/')[1],private:true,auto_init:true,description:'My Cloud Server (Cloudflare Worker)'}});
+      s.repos.unshift({full:repo.full_name,private:true,branch:repo.default_branch});save();
+      await new Promise(r=>setTimeout(r,1500));
+    }
+    const br=repo.default_branch||'main';
+    const files=[['worker.js',$('serverWorkerJs').textContent.replace(/^\s+/,'')],['wrangler.toml',wranglerToml(s)],['README.md',SERVER_README]];
+    for(const [path,text] of files){st.textContent='Sending '+path+'…';await putFile(repo.full_name,path,br,textToB64(text),'My Cloud Server: update '+path)}
+    st.innerHTML=`Done. Code is in <a href="https://github.com/${esc(repo.full_name)}" target="_blank" rel="noopener">${esc(repo.full_name)}</a>. If Cloudflare is already connected, it is redeploying now.`;
+    toast('Server code sent to GitHub');
+  }catch(e){st.textContent='';toast(e.message,true)}
+  $('pushSrvBtn').disabled=false;
+}
+async function testAI(){
+  if(!srvOk){toast('Connect the server first',true);return}
+  toast('Asking Claude through your server…');
+  try{
+    const d=await srv('/api/ai',{method:'POST',json:{model:'claude-haiku-5-5',max_tokens:20,messages:[{role:'user',content:'Reply with exactly: Server AI is working'}]}});
+    const t=(d.content||[]).map(c=>c.text||'').join('').trim();
+    toast('AI answered: '+(t||'(empty reply)'));
+  }catch(e){toast('AI test failed: '+e.message,true)}
+}
+async function loadDb(){
+  if(!srvOk){$('dbTable').innerHTML='<div class="empty">Connect the server to see your data.</div>';return}
+  try{
+    const d=await srv('/api/db');const list=d.collections.filter(c=>c.records>0);
+    $('dbTable').innerHTML=list.length?'<table><thead><tr><th>Tool</th><th>Collection</th><th>Records</th><th class="hide-sm">Size</th><th class="hide-sm">Last change</th><th></th></tr></thead><tbody>'+list.map(c=>`<tr><td>${esc(c.app)}</td><td>${esc(c.coll)}</td><td>${c.records}</td><td class="hide-sm muted">${fmtSize(c.bytes)}</td><td class="hide-sm small muted">${fmtDate(c.updated)}</td><td style="text-align:right"><button class="b s" style="margin:2px 0" onclick="exportColl('${esc(c.app)}','${esc(c.coll)}')">Export</button> <button class="b s d" style="margin:2px 0" onclick="clearColl('${esc(c.app)}','${esc(c.coll)}')">Clear</button></td></tr>`).join('')+'</tbody></table>'
+      :'<div class="empty">No data yet. Tools appear here once they save to the server.</div>';
+  }catch(e){$('dbTable').innerHTML=`<div class="empty">${esc(e.message)}</div>`}
+}
+async function exportColl(app,coll){
+  try{const d=await srv(`/api/db/${encodeURIComponent(app)}/${encodeURIComponent(coll)}`);
+    saveBlob(new Blob([JSON.stringify({app,coll,exportedAt:new Date().toISOString(),items:d.items},null,2)],{type:'application/json'}),`${app}-${coll}-${new Date().toISOString().slice(0,10)}.json`)}
+  catch(e){toast(e.message,true)}
+}
+async function clearColl(app,coll){
+  const typed=prompt(`This permanently deletes every record in ${app} / ${coll} from the server. Type ${coll} to confirm.`);
+  if(typed!==coll){if(typed!==null)toast('Not deleted: the name did not match.',true);return}
+  try{await srv(`/api/db/${encodeURIComponent(app)}/${encodeURIComponent(coll)}`,{method:'DELETE'});toast('Cleared');loadDb();renderServerStatus()}catch(e){toast(e.message,true)}
+}
+async function listAllServer(prefix){
+  let out={folders:[],files:[]},cursor=null,pages=0;
+  do{const d=await srv('/api/files?prefix='+encodeURIComponent(prefix)+(cursor?'&cursor='+encodeURIComponent(cursor):''));out.folders.push(...d.folders);out.files.push(...d.files);cursor=d.cursor}while(cursor&&++pages<20);
+  return out;
+}
+async function loadApps(){
+  if(!srvOk){$('appTable').innerHTML='<div class="empty">Connect the server to see hosted apps.</div>';return}
+  try{
+    const all=[];const walk=async p=>{const d=await listAllServer(p);all.push(...d.files);for(const f of d.folders)await walk(f)};await walk('apps/');
+    appList=all.map(f=>({key:f.key,url:srvBase()+'/apps/'+encKey(f.key.slice(5))}));
+    $('appTable').innerHTML=all.length?'<table><thead><tr><th>App</th><th class="hide-sm">Size</th><th class="hide-sm">Updated</th><th></th></tr></thead><tbody>'+all.map((f,i)=>`<tr><td><a href="${esc(appList[i].url)}" target="_blank" rel="noopener">${esc(f.key.slice(5))}</a></td><td class="hide-sm muted">${fmtSize(f.size)}</td><td class="hide-sm small muted">${fmtDate(f.uploaded)}</td><td style="text-align:right;white-space:nowrap"><button class="b s" onclick="copyText(appList[${i}].url)">Copy link</button> <button class="b s d" onclick="removeApp(${i})">Remove</button></td></tr>`).join('')+'</tbody></table>'
+      :'<div class="empty">No apps on the server yet. Use the Deploy tab with target My Server.</div>';
+  }catch(e){$('appTable').innerHTML=`<div class="empty">${esc(e.message)}</div>`}
+}
+let appList=[];
+async function removeApp(i){const key=appList[i].key;if(!confirm('Take '+key.slice(5)+' off the server? Its saved data stays in the database.'))return;try{await srv('/api/files/'+encKey(key),{method:'DELETE'});toast('Removed');loadApps()}catch(e){toast(e.message,true)}}
+function roomName(){const r=$('roomName').value.trim().toLowerCase().replace(/[^a-z0-9._-]+/g,'-');if(!r){toast('Enter a room name',true);return null}$('roomName').value=r;return r}
+async function makeInvite(){
+  const r=roomName();if(!r)return;
+  try{const d=await srv(`/api/rooms/${encodeURIComponent(r)}/invite`,{method:'POST',json:{hours:Number($('roomHours').value)}});
+    $('inviteOut').innerHTML=`Invite code for <b>${esc(r)}</b> (expires ${fmtDate(Number(d.invite.split('.')[0]))}):<br><code>${esc(d.invite)}</code> <button class="b s" onclick="copyText('${esc(d.invite)}')">Copy</button>`}
+  catch(e){toast(e.message,true)}
+}
+async function whoInRoom(){
+  const r=roomName();if(!r)return;
+  try{const d=await srv(`/api/rooms/${encodeURIComponent(r)}`);$('inviteOut').innerHTML=d.peers.length?`In <b>${esc(r)}</b> now: `+d.peers.map(p=>esc(p.name)+' ('+esc(p.role)+')').join(', '):`Nobody is in <b>${esc(r)}</b> right now.`}
+  catch(e){toast(e.message,true)}
+}
+
+/* ================= GITHUB ================= */
+async function gh(path,o={}){
+  const s=state.settings;
+  if(!s.ghToken)throw new Error('Add your GitHub token in Settings first.');
+  const headers={'Accept':o.accept||'application/vnd.github+json','Authorization':'Bearer '+s.ghToken,'X-GitHub-Api-Version':'2022-11-28'};
+  if(o.body)headers['Content-Type']='application/json';
+  const res=await fetch('https://api.github.com'+path,{method:o.method||'GET',headers,body:o.body?JSON.stringify(o.body):undefined,cache:'no-store'});
+  if(o.raw){if(!res.ok){const e=new Error(res.status===404?'Not found.':'GitHub error '+res.status);e.status=res.status;throw e}return res;}
+  if(res.status===204)return null;
+  let data=null;try{data=await res.json()}catch(e){}
+  if(!res.ok){const err=new Error(ghMsg(res.status,data));err.status=res.status;throw err;}
+  return data;
+}
+function ghMsg(status,data){
+  const m=(data&&data.message)||'';
+  if(status===401)return 'GitHub rejected the token. Check it in Settings.';
+  if(status===403&&/rate limit/i.test(m))return 'GitHub rate limit reached. Try again in a few minutes.';
+  if(status===403)return 'The GitHub token does not have permission for this. '+m;
+  if(status===404)return 'Not found (or the token cannot see this repository).';
+  if(status===409)return 'GitHub had a conflict saving. Try again.';
+  if(status===422)return m+(data&&data.errors&&data.errors[0]&&data.errors[0].message?': '+data.errors[0].message:'');
+  return m||('GitHub error '+status);
+}
+async function getSha(repo,path,branch){
+  try{const d=await gh(`/repos/${repo}/contents/${encPath(path)}?ref=${encodeURIComponent(branch)}`);return Array.isArray(d)?null:d.sha}
+  catch(e){if(e.status===404)return null;throw e}
+}
+async function putFile(repo,path,branch,b64,message){
+  const sha=await getSha(repo,path,branch);
+  const body={message,content:b64,branch};if(sha)body.sha=sha;
+  return gh(`/repos/${repo}/contents/${encPath(path)}`,{method:'PUT',body});
+}
+function fileToB64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]||'');r.onerror=()=>rej(r.error);r.readAsDataURL(file)})}
+function textToB64(txt){const bytes=new TextEncoder().encode(txt);let bin='';for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(bin)}
+async function testConnection(){
+  const c=$('conn');
+  if(!state.settings.ghToken){c.className='conn';c.textContent='GitHub: not set';return false}
+  try{const u=await gh('/user');state.settings.ghUser=u.login;save();c.className='conn ok';c.textContent='GitHub: '+u.login;return true}
+  catch(e){c.className='conn bad';c.textContent='GitHub: error';toast(e.message,true);return false}
+}
+async function refreshRepos(){
+  try{
+    let all=[],page=1;
+    while(page<=5){const d=await gh(`/user/repos?per_page=100&sort=updated&affiliation=owner&page=${page}`);all=all.concat(d.map(r=>({full:r.full_name,private:r.private,branch:r.default_branch})));if(d.length<100)break;page++}
+    state.settings.repos=all;save();renderSettings();renderDeploy();toast(all.length+' repositories loaded');
+  }catch(e){toast(e.message,true)}
+}
+const repoOpts=(sel,blank)=>{const list=state.settings.repos.map(r=>r.full);if(sel&&!list.includes(sel))list.unshift(sel);return (blank!=null?`<option value="">${esc(blank)}</option>`:'')+list.map(f=>{const r=state.settings.repos.find(x=>x.full===f);return `<option value="${esc(f)}"${f===sel?' selected':''}>${esc(f)}${r?(r.private?' (private)':' (public)'):''}</option>`}).join('')};
+function pagesUrl(repo,path){
+  const [owner,name]=repo.split('/');const base=name.toLowerCase()===(owner+'.github.io').toLowerCase()?`https://${owner}.github.io/`:`https://${owner}.github.io/${name}/`;
+  const p=path.replace(/^\/+/,'');return base+(/^index\.html?$/i.test(p)?'':p.split('/').map(encodeURIComponent).join('/'));
+}
+
+/* ================= HOME ================= */
+function renderHome(){
+  const t=state.tools,live=t.filter(x=>x.status==='Live').length;
+  const srvTxt=!state.settings.serverUrl?'Not set':srvOk?'Online':'Offline';
+  $('stats').innerHTML=[['Server',srvTxt],['Tools',t.length],['Live',live],['Deploys',state.deploys.length]].map(([k,v])=>`<div class="card stat"><b>${esc(v)}</b><span>${k}</span></div>`).join('');
+  const q=t.filter(x=>x.url);
+  $('quick').innerHTML=q.length?q.map(x=>`<a class="quick" href="${esc(x.url)}" target="_blank" rel="noopener"><b>${esc(x.name)}</b><span>${esc(x.category)}${x.check?' · '+(x.check.ok?'reachable':'not reachable'):''}</span></a>`).join(''):'<div class="empty">Deploy your tools, or add their live links on the Tools tab, and they will show here.</div>';
+  const d=state.deploys.slice(0,5);
+  $('recentDeploys').innerHTML=d.length?deployTable(d):'<div class="empty">No deploys yet.</div>';
+}
+
+/* ================= TOOLS ================= */
+function renderTools(){
+  const s=state.settings;
+  const cat=$('toolCat').value,st=$('toolStat').value,q=$('toolSearch').value.toLowerCase();
+  $('toolCat').innerHTML=opts(s.categories,cat,'All categories');$('toolStat').innerHTML=opts(s.statuses,st,'All statuses');
+  const list=state.tools.filter(t=>(!cat||t.category===cat)&&(!st||t.status===st)&&(!q||(t.name+' '+t.notes+' '+t.url+' '+t.repo).toLowerCase().includes(q)));
+  $('toolList').innerHTML=list.length?list.map(t=>`<div class="card tool" style="margin:0">
+    <h3>${esc(t.name)}</h3>
+    <div class="meta"><span class="pill ${esc((t.status||'').split(' ')[0])}">${esc(t.status)}</span><span class="pill">${esc(t.category)}</span><span class="pill">${esc(t.hosting)}</span>${t.check?`<span class="pill ${t.check.ok?'up':'down'}" title="${esc(fmtDate(t.check.at))}">${t.check.ok?'Reachable':'Not reachable'}</span>`:''}</div>
+    <div class="url">${t.url?esc(t.url):'No live link yet'}${t.repo?'<br>Repo: '+esc(t.repo)+(t.path?' / '+esc(t.path):''):''}</div>
+    ${t.notes?`<div class="notes">${esc(t.notes)}</div>`:''}
+    <div class="row">${t.url?`<a class="b s p" href="${esc(t.url)}" target="_blank" rel="noopener">Open</a><button class="b s" onclick="checkTool('${t.id}')">Check</button>`:''}<button class="b s" onclick="deployFor('${t.id}')">Deploy update</button><button class="b s" onclick="editTool('${t.id}')">Edit</button><button class="b s d" onclick="delTool('${t.id}')">Delete</button></div>
+  </div>`).join(''):'<div class="empty">No tools match.</div>';
+}
+let editingId=null;
+function editTool(id){
+  const s=state.settings,t=id?state.tools.find(x=>x.id===id):{name:'',url:'',repo:'',path:'',category:s.categories[0],status:s.statuses[0],hosting:s.hostings[0],notes:''};
+  editingId=id||null;$('tdTitle').textContent=id?'Edit tool':'Add tool';
+  $('tdName').value=t.name;$('tdUrl').value=t.url;$('tdPath').value=t.path;$('tdNotes').value=t.notes;
+  $('tdCat').innerHTML=opts(s.categories,t.category);$('tdStat').innerHTML=opts(s.statuses,t.status);$('tdHost').innerHTML=opts(s.hostings,t.hosting);
+  $('tdRepo').innerHTML=repoOpts(fullRepo(t.repo),'(none)');
+  $('toolDlg').showModal();
+}
+function saveTool(){
+  const name=$('tdName').value.trim();if(!name){toast('Name is required',true);return}
+  const data={name,url:$('tdUrl').value.trim(),repo:$('tdRepo').value,path:$('tdPath').value.trim(),category:$('tdCat').value,status:$('tdStat').value,hosting:$('tdHost').value,notes:$('tdNotes').value.trim()};
+  if(editingId){Object.assign(state.tools.find(x=>x.id===editingId),data)}else{state.tools.push({id:uid(),check:null,...data})}
+  save();$('toolDlg').close();renderAll();toast('Saved');
+}
+function delTool(id){const t=state.tools.find(x=>x.id===id);if(!confirm('Remove "'+t.name+'" from the hub? (Nothing on GitHub or the server is deleted.)'))return;state.tools=state.tools.filter(x=>x.id!==id);save();renderAll()}
+async function probe(url){
+  try{const r=await fetch(url,{cache:'no-store'});return r.ok}
+  catch(e){try{await fetch(url,{mode:'no-cors',cache:'no-store'});return true}catch(e2){return false}}
+}
+async function checkTool(id){const t=state.tools.find(x=>x.id===id);if(!t.url)return;toast('Checking '+t.name+'…');t.check={ok:await probe(t.url),at:Date.now()};save();renderAll();toast(t.name+(t.check.ok?' is reachable':' is not reachable'),!t.check.ok)}
+async function checkAllTools(){const l=state.tools.filter(t=>t.url);if(!l.length){toast('No tools have links yet');return}toast('Checking '+l.length+' tools…');await Promise.all(l.map(async t=>{t.check={ok:await probe(t.url),at:Date.now()}}));save();renderAll();toast('Done: '+l.filter(t=>t.check.ok).length+' of '+l.length+' reachable')}
+function deployFor(id){
+  const t=state.tools.find(x=>x.id===id);showTab('deploy');
+  $('dTarget').value=t.hosting==='GitHub Pages'?'github':'server';dTargetChanged();
+  if(t.repo&&t.hosting==='GitHub Pages'){$('dRepo').value=fullRepo(t.repo);dRepoChanged()}
+  $('dPath').value=t.path||'index.html';$('dTool').value=t.id;$('dMsg').value='Update '+$('dPath').value;
+}
+
+/* ================= CLOUD FILES ================= */
+const fileMode=()=>state.settings.storageMode==='server'&&state.settings.serverUrl?'server':'github';
+function storeReady(){const s=state.settings;return fileMode()==='server'?srvReady():!!(s.ghToken&&s.storageRepo)}
+const ghCurPath=()=>[state.settings.storageRoot,cwd].filter(Boolean).join('/');
+const srvCurPrefix=()=>'files/'+(cwd?cwd+'/':'');
+async function loadFiles(){
+  const s=state.settings,mode=fileMode();
+  $('fileLoc').textContent=mode==='server'?'My Server':'GitHub';
+  if(!storeReady()){$('filesWarn').innerHTML=`<div class="note">${mode==='server'?'Add your server address and password in Settings to use Cloud Files.':'Set your GitHub token and storage repository in Settings to use Cloud Files.'}</div>`;$('fileTable').innerHTML='';renderCrumbs();return}
+  if(mode==='github'){const repo=s.repos.find(r=>r.full===s.storageRepo);$('filesWarn').innerHTML=repo&&!repo.private?'<div class="note">Your storage repository is <b>public</b>. Anyone can see these files. Switch to a private repository in Settings.</div>':''}
+  else $('filesWarn').innerHTML='';
+  $('fileTable').innerHTML='<div class="empty">Loading…</div>';renderCrumbs();
+  try{
+    if(mode==='server'){
+      const pre=srvCurPrefix(),d=await listAllServer(pre);
+      files=[...d.folders.map(f=>({type:'dir',name:f.slice(pre.length).replace(/\/$/,''),path:f})),...d.files.filter(f=>!f.key.endsWith('/.keep')&&f.key!==pre+'.keep').map(f=>({type:'file',name:f.key.slice(pre.length),path:f.key,size:f.size}))];
+    }else{
+      try{const d=await gh(`/repos/${s.storageRepo}/contents/${encPath(ghCurPath())}?ref=${encodeURIComponent(s.storageBranch)}`);files=(Array.isArray(d)?d:[]).filter(f=>f.name!=='.keep')}
+      catch(e){if(e.status===404)files=[];else throw e}
+    }
+    filesLoaded=true;
+  }catch(e){$('fileTable').innerHTML=`<div class="empty">${esc(e.message)}</div>`;return}
+  renderFiles();
+}
+function renderCrumbs(){
+  const parts=cwd?cwd.split('/'):[];
+  $('crumbs').innerHTML=`<a onclick="goCrumb(-1)">My Cloud</a>`+parts.map((p,i)=>` <span class="muted">/</span> <a onclick="goCrumb(${i})">${esc(p)}</a>`).join('');
+}
+function goCrumb(i){goDir(i<0?'':cwd.split('/').slice(0,i+1).join('/'))}
+function goDir(p){cwd=p;$('fileFilter').value='';loadFiles()}
+function openDir(i){goDir(cwd?cwd+'/'+files[i].name:files[i].name)}
+function renderFiles(){
+  const q=$('fileFilter').value.toLowerCase();
+  const list=files.filter(f=>!q||f.name.toLowerCase().includes(q)).sort((a,b)=>(a.type===b.type?a.name.localeCompare(b.name):a.type==='dir'?-1:1));
+  if(!list.length){$('fileTable').innerHTML='<div class="empty">'+(files.length?'Nothing matches.':'This folder is empty. Upload files above.')+'</div>';return}
+  $('fileTable').innerHTML='<table><thead><tr><th>Name</th><th class="hide-sm">Size</th><th style="text-align:right">Actions</th></tr></thead><tbody>'+list.map(f=>{
+    const idx=files.indexOf(f);
+    return f.type==='dir'
+      ?`<tr><td class="fname" onclick="openDir(${idx})">📁 ${esc(f.name)}</td><td class="hide-sm muted">folder</td><td style="text-align:right"><button class="b s d" onclick="delFolder(${idx})">Delete</button></td></tr>`
+      :`<tr><td class="fname" onclick="viewFile(${idx})">${fileIcon(f.name)} ${esc(f.name)}</td><td class="hide-sm muted">${fmtSize(f.size)}</td><td style="text-align:right;white-space:nowrap"><button class="b s" onclick="downloadFile(${idx})">Download</button> <button class="b s d" onclick="delFile(${idx})">Delete</button></td></tr>`;
+  }).join('')+'</tbody></table>';
+}
+function fileIcon(n){const e=(n.split('.').pop()||'').toLowerCase();return /^(png|jpe?g|gif|webp|svg|heic)$/.test(e)?'🖼️':e==='pdf'?'📕':/^(html?|js|css|json)$/.test(e)?'🧩':/^(docx?|txt|md|rtf)$/.test(e)?'📄':/^(xlsx?|csv)$/.test(e)?'📊':/^(mp4|mov|mp3|m4a|wav)$/.test(e)?'🎞️':'📦'}
+async function fetchBlob(f){
+  if(fileMode()==='server')return (await srv('/api/files/'+encKey(f.path),{raw:true})).blob();
+  const res=await gh(`/repos/${state.settings.storageRepo}/contents/${encPath(f.path)}?ref=${encodeURIComponent(state.settings.storageBranch)}`,{raw:true,accept:'application/vnd.github.raw+json'});return res.blob();
+}
+const MIME={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',txt:'text/plain',md:'text/plain',csv:'text/plain',json:'application/json',html:'text/plain',htm:'text/plain',mp4:'video/mp4',mp3:'audio/mpeg'};
+async function viewFile(i){
+  const f=files[i],ext=(f.name.split('.').pop()||'').toLowerCase();
+  if(!MIME[ext]){downloadFile(i);return}
+  const w=window.open('','_blank');
+  try{const b=await fetchBlob(f);const url=URL.createObjectURL(new Blob([b],{type:MIME[ext]}));if(w)w.location.href=url;else saveBlob(b,f.name)}
+  catch(e){if(w)w.close();toast(e.message,true)}
+}
+async function downloadFile(i){const f=files[i];toast('Downloading '+f.name+'…');try{saveBlob(await fetchBlob(f),f.name)}catch(e){toast(e.message,true)}}
+async function delFile(i){
+  const f=files[i];
+  if(fileMode()==='server'){
+    if(!confirm('Permanently delete "'+f.name+'" from your server?'))return;
+    try{await srv('/api/files/'+encKey(f.path),{method:'DELETE'});toast('Deleted');loadFiles()}catch(e){toast(e.message,true)}
+    return;
+  }
+  if(!confirm('Delete "'+f.name+'" from your cloud? GitHub keeps it in the repository history, but it will be gone from this folder.'))return;
+  try{await gh(`/repos/${state.settings.storageRepo}/contents/${encPath(f.path)}`,{method:'DELETE',body:{message:'Delete '+f.path,sha:f.sha,branch:state.settings.storageBranch}});toast('Deleted');loadFiles()}catch(e){toast(e.message,true)}
+}
+async function delFolder(i){
+  const f=files[i],s=state.settings;
+  if(fileMode()==='server'){
+    const typed=prompt(`This permanently deletes the folder "${f.name}" and everything inside it. Type ${f.name} to confirm.`);
+    if(typed!==f.name){if(typed!==null)toast('Not deleted: the name did not match.',true);return}
+    try{const d=await srv('/api/files/'+encKey(f.path)+'?recursive=1',{method:'DELETE'});toast('Deleted '+d.deleted+' item'+(d.deleted===1?'':'s'));loadFiles()}catch(e){toast(e.message,true)}
+    return;
+  }
+  try{
+    const d=await gh(`/repos/${s.storageRepo}/contents/${encPath(f.path)}?ref=${encodeURIComponent(s.storageBranch)}`);
+    const real=d.filter(x=>x.name!=='.keep');
+    if(real.length){toast('Empty the folder "'+f.name+'" first ('+real.length+' item'+(real.length>1?'s':'')+' inside).',true);return}
+    if(!confirm('Delete empty folder "'+f.name+'"?'))return;
+    for(const k of d)await gh(`/repos/${s.storageRepo}/contents/${encPath(k.path)}`,{method:'DELETE',body:{message:'Delete folder '+f.path,sha:k.sha,branch:s.storageBranch}});
+    toast('Folder deleted');loadFiles();
+  }catch(e){toast(e.message,true)}
+}
+async function newFolder(){
+  if(!storeReady()){toast('Set up Cloud Files in Settings first',true);return}
+  const n=(prompt('Folder name')||'').trim().replace(/[\\/]+/g,'-');if(!n)return;
+  try{
+    if(fileMode()==='server')await srv('/api/files/'+encKey(srvCurPrefix()+n+'/.keep'),{method:'PUT',body:''});
+    else await putFile(state.settings.storageRepo,ghCurPath()+'/'+n+'/.keep',state.settings.storageBranch,'','Create folder '+n);
+    toast('Folder created');loadFiles();
+  }catch(e){toast(e.message,true)}
+}
+async function uploadFiles(list){
+  if(!storeReady()){toast('Set up Cloud Files in Settings first',true);return}
+  const arr=[...list];if(!arr.length)return;
+  const server=fileMode()==='server';
+  const big=arr.filter(f=>f.size>95*1048576);if(big.length)toast('Too large to upload (over 95 MB): '+big.map(f=>f.name).join(', '),true);
+  const ok=arr.filter(f=>f.size<=95*1048576);
+  if(!server&&ok.some(f=>f.size>25*1048576)&&!confirm('Some files are over 25 MB and may be slow or fail on GitHub. Continue?'))return;
+  let done=0;
+  for(const f of ok){
+    $('upStatus').textContent=`Uploading ${done+1} of ${ok.length}: ${f.name}`;
+    try{
+      if(server)await srv('/api/files/'+encKey(srvCurPrefix()+f.name),{method:'PUT',body:f,headers:{'Content-Type':f.type||'application/octet-stream'}});
+      else await putFile(state.settings.storageRepo,ghCurPath()+'/'+f.name,state.settings.storageBranch,await fileToB64(f),'Upload '+f.name);
+      done++;
+    }catch(e){toast(f.name+': '+e.message,true)}
+  }
+  $('upStatus').textContent='';toast(done+' file'+(done===1?'':'s')+' uploaded');loadFiles();
+}
+const drop=$('drop');
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',e=>uploadFiles(e.dataTransfer.files));
+
+/* ================= DEPLOY ================= */
+function renderDeploy(){
+  const s=state.settings,cur=$('dRepo').value,curTool=$('dTool').value;
+  $('dTarget').value=s.deployTarget||'server';
+  $('dRepo').innerHTML=repoOpts(cur,s.repos.length?'Choose a repository':'Load repositories in Settings');
+  $('dTool').innerHTML='<option value="">(don\'t link)</option>'+state.tools.map(t=>`<option value="${t.id}"${t.id===curTool?' selected':''}>${esc(t.name)}</option>`).join('');
+  if(!$('dBranch').value)$('dBranch').value=s.deployBranch;
+  $('deployLog').innerHTML=state.deploys.length?deployTable(state.deploys):'<div class="empty">No deploys yet.</div>';
+  applyTargetVisibility();
+}
+function applyTargetVisibility(){const gh=$('dTarget').value==='github';document.querySelectorAll('#tab-deploy .gh-only').forEach(el=>el.style.display=gh?'':'none')}
+function dTargetChanged(){state.settings.deployTarget=$('dTarget').value;save();applyTargetVisibility()}
+function deployTable(list){return '<table><thead><tr><th>When</th><th>File</th><th class="hide-sm">Where</th></tr></thead><tbody>'+list.map(d=>`<tr><td class="small muted">${esc(fmtDate(d.at))}</td><td><a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.path)}</a></td><td class="hide-sm small muted">${esc(d.repo)}</td></tr>`).join('')+'</tbody></table>'}
+function dRepoChanged(){const r=state.settings.repos.find(x=>x.full===$('dRepo').value);if(r)$('dBranch').value=r.branch||state.settings.deployBranch;$('pagesInfo').textContent='Pick a repository above, then check.';$('enablePagesBtn').style.display='none'}
+function dFileChanged(){const f=$('dFile').files[0];if(!f)return;if(!$('dPath').value)$('dPath').value=f.name;if(!$('dMsg').value)$('dMsg').value='Update '+$('dPath').value}
+async function deployFile(){
+  const target=$('dTarget').value,path=$('dPath').value.trim().replace(/^\/+/,''),f=$('dFile').files[0];
+  if(!path||!f){toast('Choose a file and a file name',true);return}
+  let url,where;
+  $('dGo').disabled=true;$('dStatus').textContent='Uploading…';
+  try{
+    if(target==='server'){
+      if(!srvReady())throw new Error('Connect your server in Settings first.');
+      await srv('/api/files/'+encKey('apps/'+path),{method:'PUT',body:f,headers:{'Content-Type':f.type||'text/html'}});
+      url=srvBase()+'/apps/'+encKey(path);where='My Server';
+    }else{
+      const repo=$('dRepo').value,branch=$('dBranch').value.trim()||'main';
+      if(!repo)throw new Error('Choose a repository');
+      const r=state.settings.repos.find(x=>x.full===repo);
+      if(r&&r.private&&!confirm('This repository is private. GitHub Pages on private repositories needs a paid GitHub plan. Deploy anyway?')){$('dGo').disabled=false;$('dStatus').textContent='';return}
+      await putFile(repo,path,branch,await fileToB64(f),$('dMsg').value.trim()||('Update '+path));
+      url=pagesUrl(repo,path);where=repo;
+    }
+    state.deploys.unshift({at:Date.now(),repo:where,path,url});state.deploys=state.deploys.slice(0,200);
+    const tid=$('dTool').value;if(tid){const t=state.tools.find(x=>x.id===tid);Object.assign(t,{url,path,hosting:target==='server'?'My Server':'GitHub Pages'},target==='github'?{repo:where}:{})}
+    save();renderAll();$('dFile').value='';$('dMsg').value='';
+    $('dStatus').innerHTML=(target==='server'?'Live now: ':'Deployed. It can take a minute to go live: ')+`<a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a>`;
+    if(target==='github')checkPages(true);else if(srvOk)loadApps();
+  }catch(e){$('dStatus').textContent='';toast(e.message,true)}
+  $('dGo').disabled=false;
+}
+async function checkPages(quiet){
+  const repo=$('dRepo').value;if(!repo){if(!quiet)toast('Choose a repository first',true);return}
+  try{
+    const p=await gh(`/repos/${repo}/pages`);let build='';
+    try{const b=await gh(`/repos/${repo}/pages/builds/latest`);build=` · latest build: <b>${esc(b.status)}</b>`}catch(e){}
+    $('pagesInfo').innerHTML=`GitHub Pages is <b>on</b> (branch ${esc(p.source&&p.source.branch)}). Site: <a href="${esc(p.html_url)}" target="_blank" rel="noopener">${esc(p.html_url)}</a>${build}`;
+    $('enablePagesBtn').style.display='none';
+  }catch(e){
+    if(e.status===404){$('pagesInfo').innerHTML='GitHub Pages is <b>off</b> for this repository.';$('enablePagesBtn').style.display=''}
+    else if(!quiet)toast(e.message,true);
+  }
+}
+async function enablePages(){
+  const repo=$('dRepo').value,branch=$('dBranch').value.trim()||'main';
+  try{await gh(`/repos/${repo}/pages`,{method:'POST',body:{source:{branch,path:'/'}}});toast('GitHub Pages turned on');checkPages()}catch(e){toast(e.message,true)}
+}
+async function createRepo(){
+  const name=$('nrName').value.trim().replace(/\s+/g,'-');if(!name){toast('Enter a name',true);return}
+  try{const r=await gh('/user/repos',{method:'POST',body:{name,private:$('nrVis').value==='private',auto_init:true}});
+    state.settings.repos.unshift({full:r.full_name,private:r.private,branch:r.default_branch});save();$('nrName').value='';renderDeploy();$('dRepo').value=r.full_name;dRepoChanged();toast('Created '+r.full_name)}
+  catch(e){toast(e.message,true)}
+}
+function clearDeploys(){if(confirm('Clear deploy history in the hub? (Nothing online is touched.)')){state.deploys=[];save();renderAll()}}
+
+/* ================= SETTINGS ================= */
+function renderSettings(){
+  const s=state.settings;
+  $('sSrvUrl').value=s.serverUrl;$('sSrvPw').value=s.serverPassword;$('sStoreMode').value=s.storageMode;
+  $('sUser').value=s.ghUser;$('sToken').value=s.ghToken;$('sStoreBranch').value=s.storageBranch;$('sStoreRoot').value=s.storageRoot;$('sDeployBranch').value=s.deployBranch;
+  $('sStore').innerHTML=repoOpts(s.storageRepo,'Choose a repository');
+  $('sCats').value=s.categories.join('\n');$('sStats').value=s.statuses.join('\n');$('sHosts').value=s.hostings.join('\n');
+  $('repoCount').textContent=s.repos.length?s.repos.length+' repositories loaded':'';
+  $('syncWhere').textContent=srvReady()?'Saves to: your server.':'Saves to: your GitHub storage repository (connect your server to use it instead).';
+}
+async function saveServerSettings(){
+  const s=state.settings;
+  let u=$('sSrvUrl').value.trim();if(u&&!/^https?:\/\//i.test(u))u='https://'+u;
+  s.serverUrl=u.replace(/\/+$/,'');s.serverPassword=$('sSrvPw').value.trim();
+  if(s.storageMode!==$('sStoreMode').value){s.storageMode=$('sStoreMode').value;cwd='';filesLoaded=false}
+  save();renderSettings();
+  if(!s.serverUrl){setSrvBadge('','Server: not set');toast('Server settings saved');return}
+  if(await testServer())toast('Server connected');
+  filesLoaded=false;renderSettings();
+}
+async function saveSettings(test){
+  const s=state.settings,prevStore=s.storageRepo+s.storageRoot+s.storageBranch;
+  s.ghUser=$('sUser').value.trim();s.ghToken=$('sToken').value.trim();s.storageRepo=$('sStore').value;s.storageBranch=$('sStoreBranch').value.trim()||'main';
+  s.storageRoot=$('sStoreRoot').value.trim().replace(/^\/+|\/+$/g,'');s.deployBranch=$('sDeployBranch').value.trim()||'main';
+  save();if(prevStore!==s.storageRepo+s.storageRoot+s.storageBranch){cwd='';filesLoaded=false}
+  if(test){if(await testConnection()){if(!s.repos.length)await refreshRepos();toast('Connected as '+s.ghUser)}}else toast('Settings saved');
+  renderSettings();
+}
+function saveLists(){
+  const p=id=>[...new Set($(id).value.split('\n').map(x=>x.trim()).filter(Boolean))];
+  const c=p('sCats'),st=p('sStats'),h=p('sHosts');if(!c.length||!st.length||!h.length){toast('Each list needs at least one item',true);return}
+  Object.assign(state.settings,{categories:c,statuses:st,hostings:h});save();renderAll();toast('Lists saved');
+}
+async function createStorageRepo(){
+  const name=(prompt('Name for your private storage repository','my-cloud')||'').trim().replace(/\s+/g,'-');if(!name)return;
+  try{const r=await gh('/user/repos',{method:'POST',body:{name,private:true,auto_init:true,description:'Private storage for My Cloud Hub'}});
+    const s=state.settings;s.repos.unshift({full:r.full_name,private:true,branch:r.default_branch});s.storageRepo=r.full_name;s.storageBranch=r.default_branch;save();cwd='';filesLoaded=false;renderSettings();toast('Created private repo '+r.full_name)}
+  catch(e){toast(e.message,true)}
+}
+function exportable(){const c=JSON.parse(JSON.stringify(state));c.settings.ghToken='';c.settings.serverPassword='';c.exportedAt=new Date().toISOString();return c}
+function exportData(){saveBlob(new Blob([JSON.stringify(exportable(),null,2)],{type:'application/json'}),'my-cloud-hub-backup-'+new Date().toISOString().slice(0,10)+'.json')}
+function applyImported(d,keep){
+  if(!d||!d.settings||!Array.isArray(d.tools))throw new Error('That is not a My Cloud Hub backup.');
+  const cur=state.settings;
+  state={settings:{...DEFAULTS.settings,...d.settings,ghToken:cur.ghToken,serverPassword:cur.serverPassword,serverUrl:d.settings.serverUrl||cur.serverUrl,...(keep||{})},tools:d.tools,deploys:d.deploys||[]};
+  save();cwd='';filesLoaded=false;renderAll();
+}
+function importData(f){if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!confirm('Replace your hub with this backup? Your password and token stay as they are.'))return;applyImported(d);toast('Backup imported')}catch(e){toast(e.message,true)}};r.readAsText(f)}
+async function cloudSave(){
+  try{
+    if(srvReady()){await srv('/api/db/cloudhub/hub/data',{method:'PUT',json:exportable()});toast('Hub saved to your server');return}
+    if(!(state.settings.ghToken&&state.settings.storageRepo)){toast('Connect your server or a GitHub storage repository first',true);return}
+    await putFile(state.settings.storageRepo,GH_SYNC_PATH,state.settings.storageBranch,textToB64(JSON.stringify(exportable(),null,2)),'Sync My Cloud Hub data');toast('Hub saved to GitHub');
+  }catch(e){toast(e.message,true)}
+}
+async function cloudLoad(){
+  try{
+    let d,keep;
+    if(srvReady()){
+      try{d=(await srv('/api/db/cloudhub/hub/data')).data}catch(e){if(e.status===404)throw new Error('No saved hub on the server yet. Use "Save hub to cloud" on your other device first.');throw e}
+      keep={serverUrl:state.settings.serverUrl};
+    }else{
+      if(!(state.settings.ghToken&&state.settings.storageRepo)){toast('Connect your server or a GitHub storage repository first',true);return}
+      try{const res=await gh(`/repos/${state.settings.storageRepo}/contents/${encPath(GH_SYNC_PATH)}?ref=${encodeURIComponent(state.settings.storageBranch)}`,{raw:true,accept:'application/vnd.github.raw+json'});d=JSON.parse(await res.text())}
+      catch(e){if(e.status===404)throw new Error('No saved hub on GitHub yet. Use "Save hub to cloud" first.');throw e}
+      keep={storageRepo:state.settings.storageRepo,storageBranch:state.settings.storageBranch};
+    }
+    if(!confirm('Replace this device\'s hub with the cloud copy saved '+(d.exportedAt?fmtDate(d.exportedAt):'earlier')+'?'))return;
+    applyImported(d,keep);toast('Hub loaded from cloud');
+  }catch(e){toast(e.message,true)}
+}
+
+/* ================= INIT ================= */
+function renderAll(){renderHome();renderTools();renderDeploy();if($('tab-settings').classList.contains('on'))renderSettings();if($('tab-server').classList.contains('on'))renderServerTab()}
+renderAll();
+testConnection();
+testServer(true);
+</script>
+</body>
+</html>
