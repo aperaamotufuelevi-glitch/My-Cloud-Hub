@@ -1,6 +1,5 @@
 <!doctype html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>My Cloud Hub</title>
@@ -159,7 +158,7 @@ ol.easy{margin:6px 0 10px;padding-left:22px}ol.easy li{margin-bottom:6px}
       <input id="fileFilter" placeholder="Filter this folder" oninput="renderFiles()" style="width:170px">
     </div>
     <div class="drop" id="drop">Drop files here, or <label for="upFiles" style="display:inline;color:var(--accent);cursor:pointer">choose files</label> to upload to this folder
-      <input type="file" id="upFiles" multiple style="display:none" onchange="uploadFiles(this.files);this.value=''">
+      <input type="file" id="upFiles" multiple="" style="display:none" onchange="uploadFiles(this.files);this.value=''">
     </div>
     <div class="row" style="margin-bottom:10px">
       <button class="b s" onclick="newFolder()">New folder</button>
@@ -181,7 +180,7 @@ ol.easy{margin:6px 0 10px;padding-left:22px}ol.easy li{margin-bottom:6px}
     </ol>
     <div class="row" style="margin-top:4px">
       <select id="upCat" style="width:auto"></select>
-      <label class="b p big" style="margin:0">Choose my work<input type="file" accept=".html,.htm" multiple style="display:none" onchange="uploadTools(this.files);this.value=''"></label>
+      <label class="b p big" style="margin:0">Choose my work<input type="file" accept=".html,.htm" multiple="" style="display:none" onchange="uploadTools(this.files);this.value=''"></label>
     </div>
     <div id="upResult" style="margin-top:12px"></div>
     <p class="small muted" style="margin-bottom:0">Uploading a file with the same name replaces the old one. Your saved data stays.</p>
@@ -372,7 +371,7 @@ ol.easy{margin:6px 0 10px;padding-left:22px}ol.easy li{margin-bottom:6px}
         <p class="small muted" style="margin-top:0">For tools that use live calls and messages.</p>
         <div class="grid g2">
           <div class="field"><label>Room name</label><input id="roomName" placeholder="e.g. family-call"></div>
-          <div class="field"><label>Invite lasts</label><select id="roomHours"><option value="2">2 hours</option><option value="24" selected>1 day</option><option value="168">1 week</option><option value="720">30 days</option></select></div>
+          <div class="field"><label>Invite lasts</label><select id="roomHours"><option value="2">2 hours</option><option value="24" selected="">1 day</option><option value="168">1 week</option><option value="720">30 days</option></select></div>
         </div>
         <div class="row"><button class="b" onclick="makeInvite()">Create invite code</button><button class="b" onclick="whoInRoom()">Who's in this room</button></div>
         <div id="inviteOut" class="small" style="margin-top:10px"></div>
@@ -385,7 +384,7 @@ ol.easy{margin:6px 0 10px;padding-left:22px}ol.easy li{margin-bottom:6px}
 <dialog id="toolDlg">
   <form method="dialog" onsubmit="return false">
     <h2 id="tdTitle">Tool</h2>
-    <div class="field"><label>Name</label><input id="tdName" required></div>
+    <div class="field"><label>Name</label><input id="tdName" required=""></div>
     <div class="field"><label>Live URL</label><input id="tdUrl" placeholder="https://..."></div>
     <div class="grid g2">
       <div class="field"><label>Category</label><select id="tdCat"></select></div>
@@ -2200,6 +2199,4 @@ testConnection();
   if(onServer&&srvOk)await legacyImport();
   renderAll();
 })();
-</script>
-</body>
-</html>
+</script></body></html>
